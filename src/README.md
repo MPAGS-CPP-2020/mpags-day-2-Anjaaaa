@@ -5,17 +5,7 @@ A simple command line tool for encrypting/decrypting text using classical cipher
 Compilation of `mpags-cipher` requires a  C++11 compatible compiler
 (GCC 4.8 or better, Clang 3.4 or better are recommended) and `make`
 on a UNIX operating system.
-Windows platforms with Visual Studio 2015 or better are also expected to
-work, but not tested.
-
-To build from a clone of this repository, open a terminal window
-and change directory into that holding this README. Then run:
-```
-$ ls
-LICENSE          README.md        mpags-cipher.cpp
-$ g++ -std=c++11 -Wall -Wextra -Werror -Wfatal-errors -pedantic -Wshadow -o mpags-cipher mpags-cipher.cpp
-$ ./mpags-cipher
-```
+In order to build the program, run `cmake ../src` in the `build` folder and compile using `make` also in the `build` folder.
 
 If no input file is supplied, `mpags-cipher` will wait for user input
 from the keyboard until RETURN followed by CTRL-D are pressed.
@@ -32,16 +22,22 @@ The results of this transliteration are output after CTRL-D.
 # Source Code Layout
 Under this directory, the code and associated files are organised as
 follows:
-
 ```
 $ tree
 .
-├── README.md               Top-level README, describes layout of the repository
-├── build
+├── README.md                   Top-level README, describes layout of the repository
+├── build                       Folder for build files, ideally empty in git
 └── src
-    ├── LICENSE             License file, in our case MIT
-    ├── README.md           This file, describes the project
-    └── mpags-cipher.cpp    Main program C++ source file
+    ├── CMakeLists.txt          cmake config file
+    ├── MPAGSCipher             folder containing additional files with outsourced functions
+    │   ├── ProcessCmdLine.cpp
+    │   ├── ProcessCmdLine.hpp
+    │   ├── TransformChar.cpp
+    │   └── TransformChar.hpp
+    ├── LICENSE                 License file, in our case MIT
+    ├── README.md               This file, describes the project
+    ├── mpags-cipher.cpp        Main program C++ source file
+    └── README.md
 ```
 
 # Copying
