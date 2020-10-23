@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <fstream>
 
 // Project headers
 #include "TransformChar.hpp"
@@ -14,8 +15,8 @@ std::string transformChar(const char in);
 bool processCommandLine(const std::vector<std::string>& args,
                         bool& helpRequested,
                         bool& versionRequested,
-                        std::string& inputFileName,
-                        std::string& outputFileName);
+                        std::string& inputFileNameName,
+                        std::string& outputFileNameName);
 
 // Main function of the mpags-cipher program
 int main(int argc, char* argv[])
@@ -26,15 +27,15 @@ int main(int argc, char* argv[])
   // Options that might be set by the command-line arguments
   bool helpRequested {false};
   bool versionRequested {false};
-  std::string inputFile {""};
-  std::string outputFile {""};
+  std::string inputFileName {""};
+  std::string outputFileName {""};
 
   // Read command line arguments
   bool cmdline {processCommandLine(cmdLineArgs,
                         helpRequested,
                         versionRequested,
-                        inputFile,
-                        outputFile)};
+                        inputFileName,
+                        outputFileName)};
 
   // Handle help, if requested
   if (helpRequested) {
@@ -58,22 +59,54 @@ int main(int argc, char* argv[])
   if (versionRequested) {
     std::cout << "0.1.0" << std::endl;
     return 0;
-  }
+  };
 
   if (cmdline){
     std::cout << "your inputs are ok" << std::endl;
     // Initialise variables for processing input text
     char inputChar {'x'};
     std::string inputText {""};
-    // Loop over each character from user input
-    // (until Return then CTRL-D (EOF) pressed)
-    while(std::cin >> inputChar){
-      inputText += transformChar(inputChar);
+
+    // Read in user input from stdin/file
+    // Warn that input file option not yet implemented
+    if (!inputFileName.empty()) {
+      std::ifstream inputFile{inputFileName};
+      bool ok_to_read = inputFile.good();
+      // Loop over each character from user input
+      if(ok_to_read){
+        while(inputFile >> inputChar){
+          inputText += transformChar(inputChar);
+        };
+        inputFile.close();
+      }else{
+        std::cout << "Could not open input file." << std::endl;
+        return 1;
+      }
+    }else{
+      // Loop over each character from user input
+      // (until Return then CTRL-D (EOF) pressed)
+      while(std::cin >> inputChar){
+        inputText += transformChar(inputChar);
+      }
     }
-    std::cout << inputText << std::endl;
+
+    // Output the transliterated text
+    if (!outputFileName.empty()) {
+      std::ofstream outputFile{outputFileName};
+      bool ok_to_write = outputFile.good();
+      if(ok_to_write){
+        outputFile << inputText << "\n";
+        outputFile.close();
+      }else{
+        std::cout << "Could not open output file." << std::endl;
+        return 1;
+      }
+    }else{
+      std::cout << inputText << std::endl;
+    };
   }else{
     std::cout << "your inputs are not ok" << std::endl;
-  }
+  };
 
   // No requirement to return from main, but we do so for clarity
   // and for consistency with other functions

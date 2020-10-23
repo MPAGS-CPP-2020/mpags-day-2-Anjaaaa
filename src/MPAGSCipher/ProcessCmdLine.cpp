@@ -55,21 +55,5 @@ bool processCommandLine(const std::vector<std::string>& args,
       return false;
     }
   }
-
-  // Read in user input from stdin/file
-  // Warn that input file option not yet implemented
-  if (!inputFileName.empty()) {
-    std::cout << "[warning] input from file ('"
-              << inputFileName
-              << "') not implemented yet, using stdin\n";
-  }
-
-  // Output the transliterated text
-  // Warn that output file option not yet implemented
-  if (!outputFileName.empty()) {
-    std::cout << "[warning] output to file ('"
-              << outputFileName
-              << "') not implemented yet, using stdout\n";
-  }
   return true;
 }
