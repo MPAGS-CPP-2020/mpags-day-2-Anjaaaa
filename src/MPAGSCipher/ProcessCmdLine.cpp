@@ -4,8 +4,10 @@
 bool processCommandLine(const std::vector<std::string>& args,
                         bool& helpRequested,
                         bool& versionRequested,
+                        bool& encrypt,
                         std::string& inputFileName,
-                        std::string& outputFileName){
+                        std::string& outputFileName,
+                        size_t& cipherKey){
   // Add a typedef that assigns another name for the given type for clarity
   typedef std::vector<std::string>::size_type size_type;
   const size_type nArgs {args.size()};
@@ -19,6 +21,22 @@ bool processCommandLine(const std::vector<std::string>& args,
     }
     else if (args[i] == "--version") {
       versionRequested = true;
+    }
+    else if (args[i] == "--encrypt") {
+      encrypt = true;
+    }
+    else if (args[i] == "--decrypt") {
+      encrypt = false;
+    }
+    else if (args[i] == "--key") {
+      if (i == nArgs-1) {
+        std::cerr << "[error] --key requires a cipher key" << std::endl;
+        return false;
+      }
+      else {
+        cipherKey = std::stoi(args[i+1]);
+        i++;
+      }
     }
     else if (args[i] == "-i") {
       // Handle input file option
