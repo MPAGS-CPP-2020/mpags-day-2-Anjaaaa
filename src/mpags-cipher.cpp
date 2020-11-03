@@ -7,16 +7,21 @@
 // Project headers
 #include "TransformChar.hpp"
 #include "ProcessCmdLine.hpp"
+#include "RunCaesarCipher.hpp"
 
 // Declare transformation function
 std::string transformChar(const char in);
-
+std::string runCaesarCipher(const std::string& inputText,
+                            const size_t key,
+                            const bool encrypt);
 // Declare command line processing function
 bool processCommandLine(const std::vector<std::string>& args,
                         bool& helpRequested,
                         bool& versionRequested,
                         std::string& inputFileNameName,
-                        std::string& outputFileNameName);
+                        std::string& outputFileNameName,
+                        bool& encrypt,
+                        size_t& cipherKey);
 
 // Main function of the mpags-cipher program
 int main(int argc, char* argv[])
@@ -27,15 +32,19 @@ int main(int argc, char* argv[])
   // Options that might be set by the command-line arguments
   bool helpRequested {false};
   bool versionRequested {false};
+  bool encrypt {false};
   std::string inputFileName {""};
   std::string outputFileName {""};
+  size_t cipherKey {0};
 
   // Read command line arguments
   bool cmdline {processCommandLine(cmdLineArgs,
                         helpRequested,
                         versionRequested,
                         inputFileName,
-                        outputFileName)};
+                        outputFileName,
+                        encrypt,
+                        cipherKey)};
 
   // Handle help, if requested
   if (helpRequested) {
@@ -57,7 +66,7 @@ int main(int argc, char* argv[])
   // Like help, requires no further action,
   // so return from main with zero to indicate success
   if (versionRequested) {
-    std::cout << "0.1.0" << std::endl;
+    std::cout << "1.0.0" << std::endl;
     return 0;
   };
 
@@ -66,6 +75,7 @@ int main(int argc, char* argv[])
     // Initialise variables for processing input text
     char inputChar {'x'};
     std::string inputText {""};
+    std::string outputText {""};
 
     // Read in user input from stdin/file
     // Warn that input file option not yet implemented
@@ -78,6 +88,7 @@ int main(int argc, char* argv[])
           inputText += transformChar(inputChar);
         };
         inputFile.close();
+        outputText = runCaesarCipher(inputText,cipherKey,encrypt);
       }else{
         std::cout << "Could not open input file." << std::endl;
         return 1;
@@ -88,6 +99,7 @@ int main(int argc, char* argv[])
       while(std::cin >> inputChar){
         inputText += transformChar(inputChar);
       }
+      outputText = runCaesarCipher(inputText,cipherKey,encrypt);
     }
 
     // Output the transliterated text
@@ -95,7 +107,7 @@ int main(int argc, char* argv[])
       std::ofstream outputFile{outputFileName};
       bool ok_to_write = outputFile.good();
       if(ok_to_write){
-        outputFile << inputText << "\n";
+        outputFile << outputText << "\n";
         outputFile.close();
       }else{
         std::cout << "Could not open output file." << std::endl;

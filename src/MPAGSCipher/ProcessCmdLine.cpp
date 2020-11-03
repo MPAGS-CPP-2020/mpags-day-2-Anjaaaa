@@ -4,9 +4,9 @@
 bool processCommandLine(const std::vector<std::string>& args,
                         bool& helpRequested,
                         bool& versionRequested,
-                        bool& encrypt,
                         std::string& inputFileName,
                         std::string& outputFileName,
+                        bool& encrypt,
                         size_t& cipherKey){
   // Add a typedef that assigns another name for the given type for clarity
   typedef std::vector<std::string>::size_type size_type;
