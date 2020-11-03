@@ -8,7 +8,7 @@ on a UNIX operating system.
 In order to build the program, run `cmake ../src` in the `build` folder and compile using `make` also in the `build` folder.
 
 If no input file is supplied, `mpags-cipher` will wait for user input
-from the keyboard until RETURN followed by CTRL-D are pressed.
+from the keyboard until RETURN followed by CTRL-D are pressed (or from a file).
 To ensure the input text can be used with the character sets known to
 classical ciphers, it is transliterated using the following rules:
 
@@ -16,7 +16,9 @@ classical ciphers, it is transliterated using the following rules:
 - Digits are translated to their English equivalent words (e.g. '0' -> "ZERO")
 - All other characters (punctuation) are discarded
 
-The results of this transliteration are output after CTRL-D.
+The results of this transliteration are encrypted or decrypted (depending on whether
+`--encrypt` or `--decrypt` is called (default is encrypt) and output to the output file.
+The caesar-cipher key can be set via `--key`.
 
 
 # Source Code Layout
@@ -32,6 +34,8 @@ $ tree
     ├── MPAGSCipher             folder containing additional files with outsourced functions
     │   ├── ProcessCmdLine.cpp
     │   ├── ProcessCmdLine.hpp
+    │   ├── RunCaesarCipher.cpp
+    │   ├── RunCaesarCipher.hpp
     │   ├── TransformChar.cpp
     │   └── TransformChar.hpp
     ├── LICENSE                 License file, in our case MIT
