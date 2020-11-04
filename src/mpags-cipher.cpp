@@ -2,9 +2,26 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <fstream>
 
-// For std::isalpha and std::isupper
-#include <cctype>
+// Project headers
+#include "TransformChar.hpp"
+#include "ProcessCmdLine.hpp"
+#include "RunCaesarCipher.hpp"
+
+// Declare transformation function
+std::string transformChar(const char in);
+std::string runCaesarCipher(const std::string& inputText,
+                            const size_t key,
+                            const bool encrypt);
+// Declare command line processing function
+bool processCommandLine(const std::vector<std::string>& args,
+                        bool& helpRequested,
+                        bool& versionRequested,
+                        std::string& inputFileNameName,
+                        std::string& outputFileNameName,
+                        bool& encrypt,
+                        size_t& cipherKey);
 
 // Main function of the mpags-cipher program
 int main(int argc, char* argv[])
@@ -12,61 +29,22 @@ int main(int argc, char* argv[])
   // Convert the command-line arguments into a more easily usable form
   const std::vector<std::string> cmdLineArgs {argv, argv+argc};
 
-  // Add a typedef that assigns another name for the given type for clarity
-  typedef std::vector<std::string>::size_type size_type;
-  const size_type nCmdLineArgs {cmdLineArgs.size()};
-
   // Options that might be set by the command-line arguments
   bool helpRequested {false};
   bool versionRequested {false};
-  std::string inputFile {""};
-  std::string outputFile {""};
+  bool encrypt {false};
+  std::string inputFileName {""};
+  std::string outputFileName {""};
+  size_t cipherKey {0};
 
-  // Process command line arguments - ignore zeroth element, as we know this to
-  // be the program name and don't need to worry about it
-  for (size_type i {1}; i < nCmdLineArgs; ++i) {
-
-    if (cmdLineArgs[i] == "-h" || cmdLineArgs[i] == "--help") {
-      helpRequested = true;
-    }
-    else if (cmdLineArgs[i] == "--version") {
-      versionRequested = true;
-    }
-    else if (cmdLineArgs[i] == "-i") {
-      // Handle input file option
-      // Next element is filename unless -i is the last argument
-      if (i == nCmdLineArgs-1) {
-	std::cerr << "[error] -i requires a filename argument" << std::endl;
-	// exit main with non-zero return to indicate failure
-	return 1;
-      }
-      else {
-	// Got filename, so assign value and advance past it
-	inputFile = cmdLineArgs[i+1];
-	++i;
-      }
-    }
-    else if (cmdLineArgs[i] == "-o") {
-      // Handle output file option
-      // Next element is filename unless -o is the last argument
-      if (i == nCmdLineArgs-1) {
-	std::cerr << "[error] -o requires a filename argument" << std::endl;
-	// exit main with non-zero return to indicate failure
-	return 1;
-      }
-      else {
-	// Got filename, so assign value and advance past it
-	outputFile = cmdLineArgs[i+1];
-	++i;
-      }
-    }
-    else {
-      // Have an unknown flag to output error message and return non-zero
-      // exit status to indicate failure
-      std::cerr << "[error] unknown argument '" << cmdLineArgs[i] << "'\n";
-      return 1;
-    }
-  }
+  // Read command line arguments
+  bool cmdline {processCommandLine(cmdLineArgs,
+                        helpRequested,
+                        versionRequested,
+                        inputFileName,
+                        outputFileName,
+                        encrypt,
+                        cipherKey)};
 
   // Handle help, if requested
   if (helpRequested) {
@@ -81,8 +59,6 @@ int main(int argc, char* argv[])
       << "                   Stdin will be used if not supplied\n\n"
       << "  -o FILE          Write processed text to FILE\n"
       << "                   Stdout will be used if not supplied\n\n";
-    // Help requires no further action, so return from main
-    // with 0 used to indicate success
     return 0;
   }
 
@@ -90,79 +66,59 @@ int main(int argc, char* argv[])
   // Like help, requires no further action,
   // so return from main with zero to indicate success
   if (versionRequested) {
-    std::cout << "0.1.0" << std::endl;
+    std::cout << "1.0.0" << std::endl;
     return 0;
-  }
+  };
 
-  // Initialise variables for processing input text
-  char inputChar {'x'};
-  std::string inputText {""};
+  if (cmdline){
+    std::cout << "your inputs are ok" << std::endl;
+    // Initialise variables for processing input text
+    char inputChar {'x'};
+    std::string inputText {""};
+    std::string outputText {""};
 
-  // Read in user input from stdin/file
-  // Warn that input file option not yet implemented
-  if (!inputFile.empty()) {
-    std::cout << "[warning] input from file ('"
-              << inputFile
-              << "') not implemented yet, using stdin\n";
-  }
-
-  // Loop over each character from user input
-  // (until Return then CTRL-D (EOF) pressed)
-  while(std::cin >> inputChar)
-  {
-    // Uppercase alphabetic characters
-    if (std::isalpha(inputChar)) {
-      inputText += std::toupper(inputChar);
-      continue;
+    // Read in user input from stdin/file
+    // Warn that input file option not yet implemented
+    if (!inputFileName.empty()) {
+      std::ifstream inputFile{inputFileName};
+      bool ok_to_read = inputFile.good();
+      // Loop over each character from user input
+      if(ok_to_read){
+        while(inputFile >> inputChar){
+          inputText += transformChar(inputChar);
+        };
+        inputFile.close();
+        outputText = runCaesarCipher(inputText,cipherKey,encrypt);
+      }else{
+        std::cout << "Could not open input file." << std::endl;
+        return 1;
+      }
+    }else{
+      // Loop over each character from user input
+      // (until Return then CTRL-D (EOF) pressed)
+      while(std::cin >> inputChar){
+        inputText += transformChar(inputChar);
+      }
+      outputText = runCaesarCipher(inputText,cipherKey,encrypt);
     }
 
-    // Transliterate digits to English words
-    switch (inputChar) {
-      case '0':
-	inputText += "ZERO";
-	break;
-      case '1':
-	inputText += "ONE";
-	break;
-      case '2':
-	inputText += "TWO";
-	break;
-      case '3':
-	inputText += "THREE";
-	break;
-      case '4':
-	inputText += "FOUR";
-	break;
-      case '5':
-	inputText += "FIVE";
-	break;
-      case '6':
-	inputText += "SIX";
-	break;
-      case '7':
-	inputText += "SEVEN";
-	break;
-      case '8':
-	inputText += "EIGHT";
-	break;
-      case '9':
-	inputText += "NINE";
-	break;
-    }
-
-    // If the character isn't alphabetic or numeric, DONT add it.
-    // Our ciphers can only operate on alphabetic characters.
-  }
-
-  // Output the transliterated text
-  // Warn that output file option not yet implemented
-  if (!outputFile.empty()) {
-    std::cout << "[warning] output to file ('"
-              << outputFile
-              << "') not implemented yet, using stdout\n";
-  }
-
-  std::cout << inputText << std::endl;
+    // Output the transliterated text
+    if (!outputFileName.empty()) {
+      std::ofstream outputFile{outputFileName};
+      bool ok_to_write = outputFile.good();
+      if(ok_to_write){
+        outputFile << outputText << "\n";
+        outputFile.close();
+      }else{
+        std::cout << "Could not open output file." << std::endl;
+        return 1;
+      }
+    }else{
+      std::cout << inputText << std::endl;
+    };
+  }else{
+    std::cout << "your inputs are not ok" << std::endl;
+  };
 
   // No requirement to return from main, but we do so for clarity
   // and for consistency with other functions
